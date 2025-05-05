@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Counter</title>
+    <style>
+        body {
+            font-family: Arial, 'Noto Sans Devanagari', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Restrict to tablet and mobile only */
+        @media (min-width: 1025px) {
+            body::before {
+                content: "यह उपकरण केवल टैबलेट और मोबाइल उपकरणों के लिए उपलब्ध है।";
+                display: block;
+                text-align: center;
+                padding: 20px;
+                background-color: #ff4d4d;
+                color: white;
+                font-size: 18px;
+                position: fixed;
+                width: 100%;
+                top: 0;
+                z-index: 1000;
+            }
+            #wordCounterApp {
+                display: none;
+            }
+        }
+
+        #wordCounterApp {
+            padding: 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #selectedTextStats {
+            position: sticky;
+            top: 0;
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        #selectedTextStats.show {
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80vh;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-family: 'Noto Sans Devanagari', sans-serif;
+        }
+
+        #stats {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+
+        #stats div {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            textarea {
+                font-size: 14px;
+            }
+            #stats, #selectedTextStats {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <div id="wordCounterApp">
+        <div id="selectedTextStats">
+            <b> Select word :</b> <span id="selectedWords">0</span> Words, 
+            <span id="selectedCharsWithSpace">0</span> charector (with space), 
+            <span id="selectedCharsWithoutSpace">0</span> charector (without space)
+        </div>
+        <textarea id="textInput" placeholder="Write or Past Your Content here..."></textarea>
+        <div id="stats">
+            <div>Total word: <span id="totalWords">0</span></div>
+            <div>Total charector (with space): <span id="totalCharsWithSpace">0</span></div>
+            <div>Total charector (Without space): <span id="totalCharsWithoutSpace">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const totalWords = document.getElementById('totalWords');
+        const totalCharsWithSpace = document.getElementById('totalCharsWithSpace');
+        const totalCharsWithoutSpace = document.getElementById('totalCharsWithoutSpace');
+        const selectedTextStats = document.getElementById('selectedTextStats');
+        const selectedWords = document.getElementById('selectedWords');
+        const selectedCharsWithSpace = document.getElementById('selectedCharsWithSpace');
+        const selectedCharsWithoutSpace = document.getElementById('selectedCharsWithoutSpace');
+
+        // Disable context menu
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        function countWords(text) {
+            // Split on whitespace and filter out empty strings
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+            return words.length;
+        }
+
+        function countCharsWithSpace(text) {
+            // Count all characters, including Hindi Unicode characters
+            return Array.from(text).length;
+        }
+
+        function countCharsWithoutSpace(text) {
+            // Remove all whitespace and count remaining characters
+            return Array.from(text.replace(/\s/g, '')).length;
+        }
+
+        function updateStats() {
+            const text = textInput.value;
+            totalWords.textContent = countWords(text);
+            totalCharsWithSpace.textContent = countCharsWithSpace(text);
+            totalCharsWithoutSpace.textContent = countCharsWithoutSpace(text);
+        }
+
+        function updateSelectedStats() {
+            const selection = window.getSelection().toString();
+            if (selection.length > 0) {
+                selectedWords.textContent = countWords(selection);
+                selectedCharsWithSpace.textContent = countCharsWithSpace(selection);
+                selectedCharsWithoutSpace.textContent = countCharsWithoutSpace(selection);
+                selectedTextStats.classList.add('show');
+            } else {
+                selectedTextStats.classList.remove('show');
+            }
+        }
+
+        textInput.addEventListener('input', updateStats);
+        textInput.addEventListener('select', updateSelectedStats);
+        document.addEventListener('selectionchange', () => {
+            if (document.activeElement === textInput) {
+                updateSelectedStats();
+            } else {
+                selectedTextStats.classList.remove('show');
+            }
+        });
+
+        // Initialize stats
+        updateStats();
+    </script>
+</body>
+</html>
